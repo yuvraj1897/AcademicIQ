@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AcademIQ — Student Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0a0b0f;--bg2:#111218;--bg3:#16171e;--surface:#1c1d26;--surface2:#22232e;--surface3:#2a2b38;
+  --border:#2e2f3e;--border2:#3a3b4e;
+  --text:#f0f1f8;--text2:#9899b0;--text3:#5e5f78;
+  --accent:#6c63ff;--accent2:#8b83ff;--accent-glow:rgba(108,99,255,0.25);
+  --green:#22c55e;--green-bg:rgba(34,197,94,0.12);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.12);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.12);
+  --purple:#a855f7;--purple-bg:rgba(168,85,247,0.12);
+  --cyan:#06b6d4;--cyan-bg:rgba(6,182,212,0.12);
+  --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;
+  --radius:10px;--radius-lg:16px;--radius-xl:24px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --transition:0.2s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{
+  --bg:#f4f5fb;--bg2:#ecedf7;--bg3:#e4e5f0;--surface:#ffffff;--surface2:#f8f9fe;--surface3:#eff0f9;
+  --border:#dde0f0;--border2:#c8ccdf;
+  --text:#0d0e1a;--text2:#4a4c6a;--text3:#9496b0;
+  --accent:#5b53ee;--accent2:#7b74f5;--accent-glow:rgba(91,83,238,0.2);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;display:flex}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* LOGIN PAGE */
+#login-page{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);z-index:1000;
+}
+.login-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:48px;width:440px;max-width:94vw;
+  box-shadow:0 0 80px rgba(108,99,255,0.12),var(--shadow);
+}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:36px}
+.login-logo .logo-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;
+}
+.login-logo span{font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--text)}
+.login-title{font-family:var(--font-head);font-size:28px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.login-sub{color:var(--text2);font-size:14px;margin-bottom:32px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{
+  width:100%;height:44px;padding:0 14px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-family:var(--font-body);font-size:14px;
+  transition:border-color var(--transition);outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;padding:0 20px;border-radius:var(--radius);border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:14px;font-weight:500;transition:all var(--transition);
+}
+.btn-primary{background:var(--accent);color:#fff;width:100%}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 8px 24px var(--accent-glow)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-success{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.btn-success:hover{background:var(--green);color:#fff}
+.btn-sm{height:34px;padding:0 14px;font-size:13px}
+.login-roles{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.role-chip{
+  padding:6px 14px;border-radius:99px;font-size:12px;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  transition:all var(--transition);
+}
+.role-chip:hover,.role-chip.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+
+/* SIDEBAR */
+#sidebar{
+  width:240px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;transition:width var(--transition),transform var(--transition);
+  position:relative;z-index:100;
+}
+#sidebar.collapsed{width:68px}
+.sidebar-logo{
+  display:flex;align-items:center;gap:10px;padding:20px 18px;
+  border-bottom:1px solid var(--border);min-height:64px;
+}
+.logo-icon-sm{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;
+}
+.logo-text{font-family:var(--font-head);font-size:17px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;transition:opacity var(--transition)}
+#sidebar.collapsed .logo-text{opacity:0;width:0}
+.sidebar-toggle{
+  position:absolute;right:-12px;top:38px;width:24px;height:24px;border-radius:50%;
+  background:var(--surface3);border:1px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:11px;
+  transition:all var(--transition);z-index:10;
+}
+.sidebar-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sidebar-section{padding:12px 12px 4px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;overflow:hidden}
+#sidebar.collapsed .sidebar-section{opacity:0}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;margin:2px 8px;
+  border-radius:var(--radius);cursor:pointer;color:var(--text2);font-weight:400;
+  transition:all var(--transition);white-space:nowrap;overflow:hidden;position:relative;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--accent);border-radius:99px}
+.nav-icon{font-size:17px;flex-shrink:0;width:24px;text-align:center}
+.nav-label{font-size:13.5px;overflow:hidden;transition:opacity var(--transition)}
+#sidebar.collapsed .nav-label{opacity:0;width:0}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:600;
+  padding:2px 7px;border-radius:99px;flex-shrink:0;transition:opacity var(--transition);
+}
+#sidebar.collapsed .nav-badge{opacity:0}
+.sidebar-footer{
+  margin-top:auto;border-top:1px solid var(--border);padding:12px;
+}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius);cursor:pointer;transition:background var(--transition);overflow:hidden}
+.user-card:hover{background:var(--surface2)}
+.avatar{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;
+}
+.user-info{overflow:hidden}
+.user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap}
+.user-role{font-size:11px;color:var(--text3)}
+#sidebar.collapsed .user-info{display:none}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+#topbar{
+  height:64px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;
+}
+.page-title{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--text)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:0 12px;height:36px;
+}
+.search-bar input{background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-body);font-size:13px;width:220px}
+.search-bar input::placeholder{color:var(--text3)}
+.icon-btn{
+  width:36px;height:36px;border-radius:var(--radius);background:transparent;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:16px;
+  transition:all var(--transition);position:relative;
+}
+.icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.notif-dot{
+  position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;
+  background:var(--red);border:2px solid var(--bg2);
+}
+#content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:0}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--text)}
+.card-sub{font-size:12px;color:var(--text3)}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;
+  border-radius:50%;opacity:.08;
+}
+.stat-card[data-color="purple"]::after{background:var(--purple)}
+.stat-card[data-color="blue"]::after{background:var(--blue)}
+.stat-card[data-color="green"]::after{background:var(--green)}
+.stat-card[data-color="amber"]::after{background:var(--amber)}
+.stat-card[data-color="cyan"]::after{background:var(--cyan)}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+.stat-icon.purple{background:var(--purple-bg);color:var(--purple)}
+.stat-icon.blue{background:var(--blue-bg);color:var(--blue)}
+.stat-icon.green{background:var(--green-bg);color:var(--green)}
+.stat-icon.amber{background:var(--amber-bg);color:var(--amber)}
+.stat-icon.cyan{background:var(--cyan-bg);color:var(--cyan)}
+.stat-value{font-family:var(--font-head);font-size:32px;font-weight:700;color:var(--text);line-height:1}
+.stat-label{font-size:13px;color:var(--text2);margin-top:4px}
+.stat-badge{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;
+  padding:3px 8px;border-radius:99px;margin-top:10px;
+}
+.stat-badge.up{background:var(--green-bg);color:var(--green)}
+.stat-badge.down{background:var(--red-bg);color:var(--red)}
+
+/* CHARTS (CSS only) */
+.chart-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.chart-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;text-align:right}
+.chart-track{flex:1;height:8px;background:var(--surface3);border-radius:99px;overflow:hidden}
+.chart-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1)}
+.chart-count{font-size:12px;color:var(--text3);width:30px;text-align:right}
+
+.mini-chart{height:60px;display:flex;align-items:flex-end;gap:4px;padding:0 4px}
+.mini-bar{flex:1;border-radius:4px 4px 0 0;background:var(--accent);opacity:.5;transition:height .3s,opacity .3s}
+.mini-bar:hover{opacity:1}
+.mini-bar.highlight{opacity:1}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface2)}
+th{
+  padding:12px 16px;font-size:11px;font-weight:600;color:var(--text3);
+  text-align:left;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{padding:13px 16px;font-size:13.5px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background var(--transition);cursor:pointer}
+tbody tr:hover{background:var(--surface2)}
+td .bold{color:var(--text);font-weight:500}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:500}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+.badge.blue{background:var(--blue-bg);color:var(--blue)}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.badge.purple{background:var(--purple-bg);color:var(--purple)}
+.badge.cyan{background:var(--cyan-bg);color:var(--cyan)}
+.badge.gray{background:var(--surface3);color:var(--text3)}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* AVATAR */
+.av{
+  width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#fff;flex-shrink:0;
+}
+
+/* FILTERS ROW */
+.filters-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-select{
+  height:36px;padding:0 12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);color:var(--text2);font-family:var(--font-body);font-size:13px;
+  outline:none;cursor:pointer;transition:border-color var(--transition);
+}
+.filter-select:hover{border-color:var(--border2)}
+.filter-select:focus{border-color:var(--accent)}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity var(--transition);
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;
+  transform:translateY(20px);transition:transform var(--transition);
+  box-shadow:var(--shadow);
+}
+.modal-overlay.open .modal{transform:none}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-family:var(--font-head);font-size:17px;font-weight:700}
+.modal-close{cursor:pointer;color:var(--text3);font-size:20px;transition:color var(--transition)}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid .full{grid-column:1/-1}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border)}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.section-title{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--text)}
+.section-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.actions-group{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ATTENDANCE */
+.att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px;margin:12px 0}
+.att-cell{
+  width:100%;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:500;cursor:pointer;transition:all var(--transition);border:1px solid transparent;
+}
+.att-cell.present{background:var(--green-bg);color:var(--green);border-color:rgba(34,197,94,0.2)}
+.att-cell.absent{background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,0.2)}
+.att-cell.holiday{background:var(--surface3);color:var(--text3)}
+.att-cell.future{background:var(--surface2);color:var(--text3);cursor:default}
+.att-cell:not(.future):hover{transform:scale(1.1)}
+.att-legend{display:flex;gap:16px;flex-wrap:wrap}
+.att-leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.att-dot{width:10px;height:10px;border-radius:3px}
+.att-dot.present{background:var(--green)}
+.att-dot.absent{background:var(--red)}
+.att-dot.holiday{background:var(--surface3)}
+
+/* MARKS */
+.marks-table th{min-width:80px}
+.marks-input{
+  width:60px;height:30px;padding:0 8px;text-align:center;
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;
+}
+.marks-input:focus{border-color:var(--accent)}
+.grade-pill{
+  padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;text-align:center;
+}
+.grade-O{background:#064e3b;color:#34d399}
+.grade-A{background:#1e3a5f;color:#60a5fa}
+.grade-B{background:#3b1f5e;color:#c084fc}
+.grade-C{background:#3d2900;color:#fbbf24}
+.grade-F{background:#3b1010;color:#f87171}
+
+/* NOTICES */
+.notice-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px 20px;margin-bottom:12px;position:relative;overflow:hidden;
+}
+.notice-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.notice-card.urgent::before{background:var(--red)}
+.notice-card.info::before{background:var(--blue)}
+.notice-meta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--text3)}
+
+/* PROFILE */
+.profile-hero{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:32px;display:flex;align-items:center;gap:28px;margin-bottom:20px;flex-wrap:wrap;
+}
+.profile-av{
+  width:90px;height:90px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.profile-details h2{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--text)}
+.profile-details p{font-size:13px;color:var(--text2);margin-top:4px}
+.profile-chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.info-field{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.info-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.info-value{font-size:14px;color:var(--text);font-weight:500}
+
+/* NOTIFICATION BELL */
+.notif-panel{
+  position:absolute;top:54px;right:0;width:340px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);z-index:200;
+  opacity:0;pointer-events:none;transform:translateY(-6px);
+  transition:all var(--transition);overflow:hidden;
+}
+.notif-panel.open{opacity:1;pointer-events:all;transform:none}
+.notif-header{padding:14px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.notif-item{padding:12px 16px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)}
+.notif-item:hover{background:var(--surface2)}
+.notif-item:last-child{border-bottom:none}
+.notif-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.notif-text{font-size:13px;color:var(--text2);line-height:1.5}
+.notif-text strong{color:var(--text);font-weight:500}
+.notif-time{font-size:11px;color:var(--text3);margin-top:2px}
+.notif-unread{background:var(--surface2)}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast-item{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;
+  box-shadow:var(--shadow);pointer-events:auto;animation:slideInRight .25s ease;
+  min-width:260px;max-width:340px;
+}
+@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast-icon{font-size:16px}
+.toast-msg{flex:1;color:var(--text)}
+.toast-close{color:var(--text3);cursor:pointer;font-size:14px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{position:fixed;transform:translateX(-100%);z-index:200;width:240px!important}
+  #sidebar.mobile-open{transform:none}
+  #main{width:100vw}
+  .form-grid{grid-template-columns:1fr}
+  .profile-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{
+  padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--text2);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--transition);
+}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--text);background:var(--surface2)}
+
+/* PROGRESS BAR */
+.progress{height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .6s ease}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state .ico{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:14px}
+
+/* GRID LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.gap8{gap:8px}.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.text-sm{font-size:12px}.text-muted{color:var(--text3)}.fw500{font-weight:500}
+
+textarea.field-textarea{
+  width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;resize:vertical;min-height:80px;
+}
+textarea.field-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+<div class="login-card">
+  <div class="login-logo">
+    <div class="logo-icon">🎓</div>
+    <span>AcademIQ</span>
+  </div>
+  <div class="login-title">Welcome back</div>
+  <div class="login-sub">Sign in to your college management portal</div>
+  <div class="field"><label>Email</label><input type="email" id="login-email" value="admin@academiq.edu" placeholder="admin@academiq.edu"/></div>
+  <div class="field"><label>Password</label><input type="password" id="login-pass" value="admin123" placeholder="••••••••"/></div>
+  <button class="btn btn-primary" onclick="doLogin()">Sign In →</button>
+  <div style="margin-top:16px;font-size:12px;color:var(--text3)">Quick login presets:</div>
+  <div class="login-roles">
+    <div class="role-chip active" onclick="setRole('admin',this)">Admin</div>
+    <div class="role-chip" onclick="setRole('faculty',this)">Faculty</div>
+    <div class="role-chip" onclick="setRole('student',this)">Student</div>
+  </div>
+</div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon-sm">🎓</div>
+    <span class="logo-text">AcademIQ</span>
+  </div>
+  <div class="sidebar-toggle" onclick="toggleSidebar()">◀</div>
+  <div style="overflow-y:auto;flex:1;padding-bottom:8px">
+    <div class="sidebar-section">Main</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+    <div class="nav-item" onclick="nav('students',this)"><span class="nav-icon">🎒</span><span class="nav-label">Students</span></div>
+    <div class="nav-item" onclick="nav('attendance',this)"><span class="nav-icon">✅</span><span class="nav-label">Attendance</span></div>
+    <div class="nav-item" onclick="nav('marks',this)"><span class="nav-icon">📝</span><span class="nav-label">Marks & Results</span></div>
+    <div class="sidebar-section">Management</div>
+    <div class="nav-item" onclick="nav('notices',this)"><span class="nav-icon">📢</span><span class="nav-label">Notices</span><span class="nav-badge" id="notice-badge">3</span></div>
+    <div class="nav-item" onclick="nav('reports',this)"><span class="nav-icon">📈</span><span class="nav-label">Reports</span></div>
+    <div class="sidebar-section">System</div>
+    <div class="nav-item" onclick="nav('settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card" onclick="doLogout()">
+      <div class="avatar" id="sidebar-av">AD</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Admin User</div>
+        <div class="user-role" id="sidebar-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div class="flex items-center gap8">
+      <div class="icon-btn" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')" style="display:none" id="menu-btn">☰</div>
+      <div class="page-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar">
+        <span style="color:var(--text3);font-size:14px">🔍</span>
+        <input type="text" id="global-search" placeholder="Search students…" oninput="globalSearch(this.value)"/>
+      </div>
+      <div class="icon-btn" style="position:relative" onclick="toggleNotifPanel()">
+        🔔<span class="notif-dot" id="notif-dot"></span>
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-header">Notifications <span style="color:var(--accent);cursor:pointer;font-weight:400;font-size:12px" onclick="clearNotifs()">Mark all read</span></div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+      <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌙</div>
+    </div>
+  </div>
+  <div id="content">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Branch Distribution</span></div>
+          <div id="branch-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Semester Overview</span></div>
+          <div id="sem-chart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Admissions</span><button class="btn btn-ghost btn-sm" onclick="nav('students')">View All →</button></div>
+        <div class="table-wrap" id="recent-admissions-table"></div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="page" id="page-students">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Students</div>
+          <div class="section-sub" id="student-count-label">Loading…</div>
+        </div>
+        <div class="actions-group">
+          <button class="btn btn-ghost btn-sm" onclick="exportExcel()">⬇ Excel</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPDF()">⬇ PDF</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddStudent()">+ Add Student</button>
+        </div>
+      </div>
+      <div class="filters-row">
+        <select class="filter-select" id="filter-branch" onchange="renderStudentTable()">
+          <option value="">All Branches</option>
+          <option>Computer Science</option><option>Electronics</option><option>Mechanical</option>
+          <option>Civil</option><option>Information Technology</option><option>Electrical</option>
+        </select>
+        <select class="filter-select" id="filter-sem" onchange="renderStudentTable()">
+          <option value="">All Semesters</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+        </select>
+        <select class="filter-select" id="filter-status" onchange="renderStudentTable()">
+          <option value="">All Status</option><option>Active</option><option>Inactive</option><option>Graduated</option>
+        </select>
+        <input class="filter-select" type="text" id="filter-search" placeholder="Search by name, enrollment…" style="width:220px" oninput="renderStudentTable()"/>
+      </div>
+      <div class="table-wrap" id="student-table"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="page" id="page-attendance">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Attendance</div>
+          <div class="section-sub">Mark and track student attendance by class</div>
+        </div>
+        <div class="actions-group">
+          <select class="filter-select" id="att-branch" onchange="renderAttendance()">
+            <option value="">All Branches</option>
+            <option>Computer Science</option><option>Electronics</option><option>Mechanical</option>
+            <option>Civil</option><option>Information Technology</option><option>Electrical</option>
+          </select>
+          <select class="filter-select" id="att-sem" onchange="renderAttendance()">
+            <option value="">All Semesters</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+          </select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Mark Today's Attendance</span><span class="card-sub" id="att-today-label"></span></div>
+          <div id="att-mark-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Monthly Calendar</span></div>
+          <div id="att-calendar"></div>
+          <div class="att-legend mt12">
+            <div class="att-leg-item"><div class="att-dot present"></div>Present</div>
+            <div class="att-leg-item"><div class="att-dot absent"></div>Absent</div>
+            <div class="att-leg-item"><div class="att-dot holiday"></div>Holiday</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Attendance Summary</span></div>
+        <div class="table-wrap" id="att-summary-table"></div>
+      </div>
+    </div>
+
+    <!-- MARKS -->
+    <div class="page" id="page-marks">
+      <div class="section-header">
+        <div><div class="section-title">Marks & Results</div><div class="section-sub">Manage exam scores and view academic performance</div></div>
+        <div class="actions-group">
+          <select class="filter-select" id="marks-branch" onchange="renderMarks()">
+            <option value="">All Branches</option>
+            <option>Computer Science</option><option>Electronics</option><option>Mechanical</option>
+            <option>Civil</option><option>Information Technology</option><option>Electrical</option>
+          </select>
+          <select class="filter-select" id="marks-sem" onchange="renderMarks()">
+            <option value="">All Semesters</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+          </select>
+        </div>
+      </div>
+      <div class="card">
+        <div id="marks-table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- NOTICES -->
+    <div class="page" id="page-notices">
+      <div class="section-header">
+        <div><div class="section-title">Notices & Announcements</div><div class="section-sub">Broadcast updates to students and faculty</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openAddNotice()">+ Post Notice</button>
+      </div>
+      <div id="notices-list"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="section-header">
+        <div><div class="section-title">Reports</div><div class="section-sub">Generate and export institutional reports</div></div>
+      </div>
+      <div class="three-col">
+        <div class="card" style="cursor:pointer" onclick="exportPDF()">
+          <div class="stat-icon purple">📄</div>
+          <div class="card-title mt8">Student Directory PDF</div>
+          <div class="card-sub mt8">Full student list with all details</div>
+          <div class="badge purple mt12">Export PDF</div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="exportExcel()">
+          <div class="stat-icon green">📊</div>
+          <div class="card-title mt8">Student Excel Report</div>
+          <div class="card-sub mt8">Spreadsheet with all student data</div>
+          <div class="badge green mt12">Export Excel</div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="exportAttPDF()">
+          <div class="stat-icon blue">📅</div>
+          <div class="card-title mt8">Attendance Report PDF</div>
+          <div class="card-sub mt8">Monthly attendance summary</div>
+          <div class="badge blue mt12">Export PDF</div>
+        </div>
+        <div class="card" style="cursor:pointer" onclick="exportMarksExcel()">
+          <div class="stat-icon amber">🏆</div>
+          <div class="card-title mt8">Marks Report Excel</div>
+          <div class="card-sub mt8">Subject-wise exam results</div>
+          <div class="badge amber mt12">Export Excel</div>
+        </div>
+        <div class="card">
+          <div class="stat-icon cyan">📈</div>
+          <div class="card-title mt8">Branch-wise Analytics</div>
+          <div class="card-sub mt8">Performance breakdown by branch</div>
+          <div class="badge cyan mt12">View Report</div>
+        </div>
+        <div class="card">
+          <div class="stat-icon" style="background:var(--red-bg)">🚨</div>
+          <div class="card-title mt8">Low Attendance Alert</div>
+          <div class="card-sub mt8">Students below 75% threshold</div>
+          <div class="badge red mt12">Generate</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Performance Overview</span></div>
+        <div id="perf-chart"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-title mb20">Settings</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title mb16">Appearance</div>
+          <div class="flex items-center justify-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div><div class="fw500" style="font-size:13px;color:var(--text)">Dark Mode</div><div class="text-sm text-muted">Switch between light and dark</div></div>
+            <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()">
+              <style>.toggle-switch{width:44px;height:24px;border-radius:99px;background:var(--accent);cursor:pointer;position:relative;transition:background .3s}[data-theme=light] .toggle-switch{background:var(--surface3)}.toggle-switch::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .3s}[data-theme=light] .toggle-switch::after{transform:translateX(0px)}[data-theme=dark] .toggle-switch::after{transform:translateX(20px)}</style>
+            </div>
+          </div>
+          <div class="flex items-center justify-between" style="padding:10px 0">
+            <div><div class="fw500" style="font-size:13px;color:var(--text)">Accent Color</div><div class="text-sm text-muted">Choose your primary color</div></div>
+            <div style="display:flex;gap:6px">
+              <div onclick="setAccent('#6c63ff','#8b83ff')" style="width:20px;height:20px;border-radius:50%;background:#6c63ff;cursor:pointer;border:2px solid #fff"></div>
+              <div onclick="setAccent('#3b82f6','#60a5fa')" style="width:20px;height:20px;border-radius:50%;background:#3b82f6;cursor:pointer"></div>
+              <div onclick="setAccent('#22c55e','#34d399')" style="width:20px;height:20px;border-radius:50%;background:#22c55e;cursor:pointer"></div>
+              <div onclick="setAccent('#f59e0b','#fbbf24')" style="width:20px;height:20px;border-radius:50%;background:#f59e0b;cursor:pointer"></div>
+              <div onclick="setAccent('#ef4444','#f87171')" style="width:20px;height:20px;border-radius:50%;background:#ef4444;cursor:pointer"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title mb16">College Info</div>
+          <div class="field"><label>College Name</label><input type="text" value="Government Engineering College" id="clg-name"/></div>
+          <div class="field"><label>Academic Year</label><input type="text" value="2024-25" id="clg-year"/></div>
+          <button class="btn btn-primary btn-sm" onclick="toast('Settings saved!','✅')">Save Changes</button>
+        </div>
+        <div class="card">
+          <div class="card-title mb16">Account</div>
+          <div class="field"><label>Admin Name</label><input type="text" id="set-name" value="Admin User"/></div>
+          <div class="field"><label>Email</label><input type="text" value="admin@academiq.edu"/></div>
+          <div class="field"><label>New Password</label><input type="password" placeholder="Leave blank to keep current"/></div>
+          <button class="btn btn-primary btn-sm" onclick="toast('Account updated!','✅')">Update Account</button>
+        </div>
+        <div class="card">
+          <div class="card-title mb16">System</div>
+          <div style="font-size:13px;color:var(--text2);line-height:2">
+            <div>Version: <strong style="color:var(--text)">AcademIQ v2.5.0</strong></div>
+            <div>Database: <strong style="color:var(--green)">Connected ✓</strong></div>
+            <div>Total Students: <strong style="color:var(--text)" id="sys-total">—</strong></div>
+            <div>Last Backup: <strong style="color:var(--text)">Today, 06:00 AM</strong></div>
+          </div>
+          <button class="btn btn-ghost btn-sm mt16" onclick="toast('Backup initiated','💾')">Run Backup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT MODAL -->
+<div class="modal-overlay" id="student-modal">
+<div class="modal">
+  <div class="modal-head">
+    <span class="modal-title" id="student-modal-title">Add Student</span>
+    <span class="modal-close" onclick="closeModal('student-modal')">✕</span>
+  </div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="field"><label>Full Name *</label><input type="text" id="f-name" placeholder="Raj Patel"/></div>
+      <div class="field"><label>Enrollment No. *</label><input type="text" id="f-enroll" placeholder="EN2024001"/></div>
+      <div class="field"><label>Roll Number *</label><input type="text" id="f-roll" placeholder="CS301"/></div>
+      <div class="field"><label>Branch *</label>
+        <select id="f-branch">
+          <option value="">Select Branch</option>
+          <option>Computer Science</option><option>Electronics</option><option>Mechanical</option>
+          <option>Civil</option><option>Information Technology</option><option>Electrical</option>
+        </select>
+      </div>
+      <div class="field"><label>Semester</label>
+        <select id="f-sem">
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="f-status"><option>Active</option><option>Inactive</option><option>Graduated</option></select>
+      </div>
+      <div class="field"><label>Email *</label><input type="email" id="f-email" placeholder="raj@college.edu"/></div>
+      <div class="field"><label>Phone</label><input type="text" id="f-phone" placeholder="+91 9876543210"/></div>
+      <div class="field"><label>Date of Birth</label><input type="date" id="f-dob"/></div>
+      <div class="field"><label>Gender</label>
+        <select id="f-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+      <div class="field full"><label>Address</label><textarea class="field-textarea" id="f-address" placeholder="123, Main Street, Ahmedabad, Gujarat"></textarea></div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-ghost" onclick="closeModal('student-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+  </div>
+</div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal">
+<div class="modal" style="width:700px">
+  <div class="modal-head">
+    <span class="modal-title">Student Profile</span>
+    <span class="modal-close" onclick="closeModal('profile-modal')">✕</span>
+  </div>
+  <div class="modal-body" id="profile-modal-body"></div>
+</div>
+</div>
+
+<!-- NOTICE MODAL -->
+<div class="modal-overlay" id="notice-modal">
+<div class="modal" style="width:500px">
+  <div class="modal-head">
+    <span class="modal-title">Post Notice</span>
+    <span class="modal-close" onclick="closeModal('notice-modal')">✕</span>
+  </div>
+  <div class="modal-body">
+    <div class="field"><label>Title *</label><input type="text" id="n-title" placeholder="Exam schedule updated"/></div>
+    <div class="field"><label>Category</label>
+      <select id="n-type"><option>General</option><option value="urgent">Urgent</option><option value="info">Info</option></select>
+    </div>
+    <div class="field"><label>Message *</label><textarea class="field-textarea" id="n-body" style="min-height:120px" placeholder="Notice details…"></textarea></div>
+    <div class="field"><label>Target Audience</label>
+      <select id="n-audience"><option>All</option><option>Students</option><option>Faculty</option></select>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-ghost" onclick="closeModal('notice-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="postNotice()">Post Notice</button>
+  </div>
+</div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="modal-overlay" id="delete-modal">
+<div class="modal" style="width:420px">
+  <div class="modal-head"><span class="modal-title">Confirm Delete</span><span class="modal-close" onclick="closeModal('delete-modal')">✕</span></div>
+  <div class="modal-body"><p style="color:var(--text2);line-height:1.7">Are you sure you want to delete <strong id="del-name" style="color:var(--text)"></strong>? This action cannot be undone.</p></div>
+  <div class="form-actions">
+    <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+    <button class="btn btn-danger" onclick="confirmDelete()">Delete Student</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+const BRANCHES=['Computer Science','Electronics','Mechanical','Civil','Information Technology','Electrical'];
+const COLORS=['#6c63ff','#3b82f6','#22c55e','#f59e0b','#06b6d4','#a855f7'];
+const AV_COLORS=['#6c63ff','#3b82f6','#22c55e','#f59e0b','#06b6d4','#a855f7','#ef4444','#ec4899'];
+
+function randEl(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function initials(name){return name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
+function avatarColor(id){return AV_COLORS[id%AV_COLORS.length]}
+
+const SEED_STUDENTS=[
+  {id:1,name:'Arjun Mehta',enrollment:'EN2024001',roll:'CS301',branch:'Computer Science',sem:'5',email:'arjun@college.edu',phone:'9876543210',dob:'2003-04-15',gender:'Male',address:'45, Nehru Nagar, Ahmedabad',status:'Active',admDate:'2022-07-15'},
+  {id:2,name:'Priya Sharma',enrollment:'EN2024002',roll:'CS302',branch:'Computer Science',sem:'5',email:'priya@college.edu',phone:'9876543211',dob:'2003-06-22',gender:'Female',address:'12, Ring Road, Surat',status:'Active',admDate:'2022-07-15'},
+  {id:3,name:'Rohan Patel',enrollment:'EN2024003',roll:'EC101',branch:'Electronics',sem:'3',email:'rohan@college.edu',phone:'9876543212',dob:'2004-01-10',gender:'Male',address:'78, MG Road, Vadodara',status:'Active',admDate:'2023-07-18'},
+  {id:4,name:'Sneha Joshi',enrollment:'EN2024004',roll:'ME201',branch:'Mechanical',sem:'4',email:'sneha@college.edu',phone:'9876543213',dob:'2003-11-30',gender:'Female',address:'22, Station Road, Rajkot',status:'Active',admDate:'2023-07-18'},
+  {id:5,name:'Karan Desai',enrollment:'EN2024005',roll:'CS303',branch:'Computer Science',sem:'5',email:'karan@college.edu',phone:'9876543214',dob:'2003-08-05',gender:'Male',address:'9, Gandhi Chowk, Gandhinagar',status:'Active',admDate:'2022-07-20'},
+  {id:6,name:'Ananya Gupta',enrollment:'EN2024006',roll:'IT101',branch:'Information Technology',sem:'1',email:'ananya@college.edu',phone:'9876543215',dob:'2005-03-12',gender:'Female',address:'33, Subhash Marg, Jamnagar',status:'Active',admDate:'2024-07-22'},
+  {id:7,name:'Vikram Singh',enrollment:'EN2024007',roll:'CV201',branch:'Civil',sem:'4',email:'vikram@college.edu',phone:'9876543216',dob:'2003-09-18',gender:'Male',address:'61, Lake View, Bhavnagar',status:'Inactive',admDate:'2023-07-15'},
+  {id:8,name:'Kavya Nair',enrollment:'EN2024008',roll:'EE301',branch:'Electrical',sem:'6',email:'kavya@college.edu',phone:'9876543217',dob:'2002-12-25',gender:'Female',address:'7, Hill Top Colony, Anand',status:'Active',admDate:'2022-07-12'},
+  {id:9,name:'Amit Verma',enrollment:'EN2024009',roll:'CS304',branch:'Computer Science',sem:'7',email:'amit@college.edu',phone:'9876543218',dob:'2002-05-08',gender:'Male',address:'15, Satellite, Ahmedabad',status:'Active',admDate:'2021-07-14'},
+  {id:10,name:'Disha Rao',enrollment:'EN2024010',roll:'EC102',branch:'Electronics',sem:'3',email:'disha@college.edu',phone:'9876543219',dob:'2004-07-19',gender:'Female',address:'29, Paldi, Ahmedabad',status:'Active',admDate:'2023-07-20'},
+  {id:11,name:'Nikhil Agarwal',enrollment:'EN2024011',roll:'ME202',branch:'Mechanical',sem:'4',email:'nikhil@college.edu',phone:'9876543220',dob:'2003-02-14',gender:'Male',address:'41, Navrangpura, Ahmedabad',status:'Active',admDate:'2023-07-20'},
+  {id:12,name:'Pooja Chauhan',enrollment:'EN2024012',roll:'IT102',branch:'Information Technology',sem:'2',email:'pooja@college.edu',phone:'9876543221',dob:'2005-08-30',gender:'Female',address:'5, Maninagar, Ahmedabad',status:'Active',admDate:'2024-07-20'},
+  {id:13,name:'Rahul Kumar',enrollment:'EN2024013',roll:'CS305',branch:'Computer Science',sem:'8',email:'rahul@college.edu',phone:'9876543222',dob:'2001-11-11',gender:'Male',address:'88, Gota, Ahmedabad',status:'Graduated',admDate:'2020-07-15'},
+  {id:14,name:'Shruti Pandey',enrollment:'EN2024014',roll:'EE101',branch:'Electrical',sem:'1',email:'shruti@college.edu',phone:'9876543223',dob:'2005-04-04',gender:'Female',address:'16, Bopal, Ahmedabad',status:'Active',admDate:'2024-07-22'},
+  {id:15,name:'Mohit Yadav',enrollment:'EN2024015',roll:'CV101',branch:'Civil',sem:'2',email:'mohit@college.edu',phone:'9876543224',dob:'2005-06-16',gender:'Male',address:'27, Chandkheda, Ahmedabad',status:'Active',admDate:'2024-07-22'},
+];
+
+const SUBJECTS=['Mathematics','Physics','Data Structures','Networks','Operating System','Database'];
+
+function initData(){
+  if(!localStorage.getItem('aq_students')){
+    localStorage.setItem('aq_students',JSON.stringify(SEED_STUDENTS));
+  }
+  if(!localStorage.getItem('aq_marks')){
+    const marks={};
+    SEED_STUDENTS.forEach(s=>{
+      marks[s.id]={};
+      SUBJECTS.forEach(sub=>{
+        marks[s.id][sub]=Math.floor(Math.random()*35)+55;
+      });
+    });
+    localStorage.setItem('aq_marks',JSON.stringify(marks));
+  }
+  if(!localStorage.getItem('aq_attendance')){
+    const att={};
+    SEED_STUDENTS.forEach(s=>{
+      att[s.id]={total:0,present:0};
+      for(let i=1;i<=20;i++){
+        att[s.id][i]=Math.random()>0.15?'P':'A';
+        att[s.id].total++;
+        if(att[s.id][i]==='P') att[s.id].present++;
+      }
+    });
+    localStorage.setItem('aq_attendance',JSON.stringify(att));
+  }
+  if(!localStorage.getItem('aq_notices')){
+    const n=[
+      {id:1,title:'End Semester Examination Schedule',body:'The end semester examinations will commence from 15th December 2024. Students are advised to collect their hall tickets from the administrative office.',type:'urgent',audience:'Students',date:'2024-11-28',author:'Admin'},
+      {id:2,title:'Annual Sports Day 2024',body:'Annual Sports Day will be held on 5th December 2024. All students are encouraged to participate in various sports events.',type:'info',audience:'All',date:'2024-11-25',author:'Admin'},
+      {id:3,title:'Library Timings Updated',body:'The college library will now remain open till 9:00 PM on weekdays. Students can utilize the extended hours for exam preparation.',type:'general',audience:'All',date:'2024-11-20',author:'Admin'},
+    ];
+    localStorage.setItem('aq_notices',JSON.stringify(n));
+  }
+}
+
+function getStudents(){return JSON.parse(localStorage.getItem('aq_students')||'[]')}
+function saveStudents(s){localStorage.setItem('aq_students',JSON.stringify(s))}
+function getMarks(){return JSON.parse(localStorage.getItem('aq_marks')||'{}')}
+function saveMarks(m){localStorage.setItem('aq_marks',JSON.stringify(m))}
+function getAttendance(){return JSON.parse(localStorage.getItem('aq_attendance')||'{}')}
+function saveAttendance(a){localStorage.setItem('aq_attendance',JSON.stringify(a))}
+function getNotices(){return JSON.parse(localStorage.getItem('aq_notices')||'[]')}
+function saveNotices(n){localStorage.setItem('aq_notices',JSON.stringify(n))}
+
+// ===================== AUTH =====================
+let currentUser={name:'Admin User',role:'admin',email:'admin@academiq.edu'};
+const ROLES={
+  admin:{email:'admin@academiq.edu',pass:'admin123',name:'Admin User',role:'Administrator'},
+  faculty:{email:'faculty@academiq.edu',pass:'faculty123',name:'Dr. Sharma',role:'Faculty'},
+  student:{email:'student@academiq.edu',pass:'student123',name:'Arjun Mehta',role:'Student'},
+};
+function setRole(r,el){
+  document.querySelectorAll('.role-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const u=ROLES[r];
+  document.getElementById('login-email').value=u.email;
+  document.getElementById('login-pass').value=u.pass;
+}
+function doLogin(){
+  const email=document.getElementById('login-email').value;
+  const pass=document.getElementById('login-pass').value;
+  const user=Object.values(ROLES).find(u=>u.email===email&&u.pass===pass);
+  if(!user){toast('Invalid credentials','❌');return}
+  currentUser=user;
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('sidebar-name').textContent=user.name;
+  document.getElementById('sidebar-role').textContent=user.role;
+  document.getElementById('sidebar-av').textContent=initials(user.name);
+  renderAll();
+  toast('Welcome back, '+user.name+'! 👋','✅');
+}
+function doLogout(){
+  document.getElementById('login-page').style.display='flex';
+  toast('Logged out successfully','👋');
+}
+
+// ===================== NAVIGATION =====================
+let activePage='dashboard';
+function nav(page,el){
+  activePage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.toLowerCase().includes(page))n.classList.add('active')});
+  const titles={dashboard:'Dashboard',students:'Students',attendance:'Attendance',marks:'Marks & Results',notices:'Notices',reports:'Reports',settings:'Settings'};
+  document.getElementById('topbar-title').textContent=titles[page]||page;
+  if(page==='students')renderStudentTable();
+  if(page==='attendance')renderAttendance();
+  if(page==='marks')renderMarks();
+  if(page==='notices')renderNotices();
+  if(page==='reports')renderPerfChart();
+  if(page==='settings')document.getElementById('sys-total').textContent=getStudents().length;
+}
+
+function toggleSidebar(){
+  const s=document.getElementById('sidebar');
+  s.classList.toggle('collapsed');
+  s.querySelector('.sidebar-toggle').textContent=s.classList.contains('collapsed')?'▶':'◀';
+}
+
+// ===================== RENDER ALL =====================
+function renderAll(){
+  renderDashboard();
+  renderStudentTable();
+  renderAttendance();
+  renderMarks();
+  renderNotices();
+  renderNotifPanel();
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(){
+  const students=getStudents();
+  const active=students.filter(s=>s.status==='Active').length;
+  const att=getAttendance();
+  const avgAtt=students.length?Math.round(students.reduce((a,s)=>{const r=att[s.id];return a+(r&&r.total?r.present/r.total*100:75)},0)/students.length):0;
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card" data-color="purple">
+      <div class="stat-icon purple">👥</div>
+      <div class="stat-value">${students.length}</div>
+      <div class="stat-label">Total Students</div>
+      <div class="stat-badge up">↑ +12 this month</div>
+    </div>
+    <div class="stat-card" data-color="green">
+      <div class="stat-icon green">✅</div>
+      <div class="stat-value">${active}</div>
+      <div class="stat-label">Active Students</div>
+      <div class="stat-badge up">↑ ${Math.round(active/students.length*100)}% active</div>
+    </div>
+    <div class="stat-card" data-color="blue">
+      <div class="stat-icon blue">📅</div>
+      <div class="stat-value">${avgAtt}%</div>
+      <div class="stat-label">Avg Attendance</div>
+      <div class="stat-badge ${avgAtt>=75?'up':'down'}">${avgAtt>=75?'↑ Good':'↓ Low'}</div>
+    </div>
+    <div class="stat-card" data-color="amber">
+      <div class="stat-icon amber">🏫</div>
+      <div class="stat-value">${BRANCHES.length}</div>
+      <div class="stat-label">Branches</div>
+      <div class="stat-badge up">All active</div>
+    </div>
+  `;
+
+  // Branch chart
+  const branchCounts={};
+  BRANCHES.forEach(b=>branchCounts[b]=students.filter(s=>s.branch===b).length);
+  const maxB=Math.max(...Object.values(branchCounts),1);
+  document.getElementById('branch-chart').innerHTML=BRANCHES.map((b,i)=>`
+    <div class="chart-bar-row">
+      <div class="chart-label">${b.length>14?b.slice(0,13)+'…':b}</div>
+      <div class="chart-track"><div class="chart-fill" style="width:${branchCounts[b]/maxB*100}%;background:${COLORS[i]}"></div></div>
+      <div class="chart-count">${branchCounts[b]}</div>
+    </div>`).join('');
+
+  // Sem chart
+  const semCounts={};
+  for(let i=1;i<=8;i++)semCounts[i]=students.filter(s=>s.sem==i).length;
+  const maxS=Math.max(...Object.values(semCounts),1);
+  document.getElementById('sem-chart').innerHTML=Array.from({length:8},(_,i)=>`
+    <div class="chart-bar-row">
+      <div class="chart-label">Semester ${i+1}</div>
+      <div class="chart-track"><div class="chart-fill" style="width:${semCounts[i+1]/maxS*100}%;background:var(--accent)"></div></div>
+      <div class="chart-count">${semCounts[i+1]}</div>
+    </div>`).join('');
+
+  // Recent admissions
+  const recent=[...students].sort((a,b)=>new Date(b.admDate)-new Date(a.admDate)).slice(0,5);
+  document.getElementById('recent-admissions-table').innerHTML=buildStudentTable(recent,false);
+}
+
+// ===================== STUDENTS =====================
+let editingId=null,deletingId=null;
+function renderStudentTable(){
+  let students=getStudents();
+  const branch=document.getElementById('filter-branch')?.value;
+  const sem=document.getElementById('filter-sem')?.value;
+  const status=document.getElementById('filter-status')?.value;
+  const search=document.getElementById('filter-search')?.value?.toLowerCase();
+  if(branch)students=students.filter(s=>s.branch===branch);
+  if(sem)students=students.filter(s=>s.sem==sem);
+  if(status)students=students.filter(s=>s.status===status);
+  if(search)students=students.filter(s=>s.name.toLowerCase().includes(search)||s.enrollment.toLowerCase().includes(search)||s.roll.toLowerCase().includes(search));
+  document.getElementById('student-count-label').textContent=`Showing ${students.length} of ${getStudents().length} students`;
+  document.getElementById('student-table').innerHTML=buildStudentTable(students,true);
+}
+
+function buildStudentTable(students,actions){
+  if(!students.length)return`<div class="empty-state"><div class="ico">🎒</div><p>No students found</p></div>`;
+  return`<table>
+    <thead><tr>
+      <th>Student</th><th>Enrollment</th><th>Branch</th><th>Sem</th><th>Email</th><th>Status</th>${actions?'<th>Actions</th>':''}
+    </tr></thead>
+    <tbody>${students.map(s=>`
+    <tr onclick="viewProfile(${s.id})">
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="av" style="background:${avatarColor(s.id)}">${initials(s.name)}</div>
+        <div><div class="bold">${s.name}</div><div style="font-size:11px;color:var(--text3)">${s.roll}</div></div>
+      </div></td>
+      <td>${s.enrollment}</td>
+      <td>${s.branch}</td>
+      <td><span class="badge blue">Sem ${s.sem}</span></td>
+      <td>${s.email}</td>
+      <td><span class="badge ${s.status==='Active'?'green':s.status==='Graduated'?'purple':'red'}">${s.status}</span></td>
+      ${actions?`<td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openEditStudent(${s.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="openDeleteStudent(${s.id},'${s.name}')">🗑</button>
+        </div>
+      </td>`:''}
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function openAddStudent(){
+  editingId=null;
+  document.getElementById('student-modal-title').textContent='Add Student';
+  ['name','enroll','roll','email','phone','dob','address'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-branch').value='';
+  document.getElementById('f-sem').value='1';
+  document.getElementById('f-status').value='Active';
+  document.getElementById('f-gender').value='Male';
+  openModal('student-modal');
+}
+function openEditStudent(id){
+  editingId=id;
+  const s=getStudents().find(s=>s.id===id);
+  if(!s)return;
+  document.getElementById('student-modal-title').textContent='Edit Student';
+  document.getElementById('f-name').value=s.name;
+  document.getElementById('f-enroll').value=s.enrollment;
+  document.getElementById('f-roll').value=s.roll;
+  document.getElementById('f-branch').value=s.branch;
+  document.getElementById('f-sem').value=s.sem;
+  document.getElementById('f-email').value=s.email;
+  document.getElementById('f-phone').value=s.phone||'';
+  document.getElementById('f-dob').value=s.dob||'';
+  document.getElementById('f-gender').value=s.gender||'Male';
+  document.getElementById('f-address').value=s.address||'';
+  document.getElementById('f-status').value=s.status||'Active';
+  openModal('student-modal');
+}
+function saveStudent(){
+  const name=document.getElementById('f-name').value.trim();
+  const enroll=document.getElementById('f-enroll').value.trim();
+  const branch=document.getElementById('f-branch').value;
+  const email=document.getElementById('f-email').value.trim();
+  if(!name||!enroll||!branch||!email){toast('Please fill required fields','❌');return}
+  const students=getStudents();
+  const data={
+    name,enrollment:enroll,roll:document.getElementById('f-roll').value.trim(),
+    branch,sem:document.getElementById('f-sem').value,email,
+    phone:document.getElementById('f-phone').value.trim(),
+    dob:document.getElementById('f-dob').value,
+    gender:document.getElementById('f-gender').value,
+    address:document.getElementById('f-address').value.trim(),
+    status:document.getElementById('f-status').value,
+    admDate:new Date().toISOString().slice(0,10),
+  };
+  if(editingId){
+    const idx=students.findIndex(s=>s.id===editingId);
+    students[idx]={...students[idx],...data};
+    toast('Student updated successfully','✅');
+  } else {
+    data.id=Date.now();
+    students.push(data);
+    const marks=getMarks();
+    marks[data.id]={};
+    SUBJECTS.forEach(sub=>marks[data.id][sub]=Math.floor(Math.random()*30)+60);
+    saveMarks(marks);
+    const att=getAttendance();
+    att[data.id]={total:0,present:0};
+    saveAttendance(att);
+    toast('Student added successfully','✅');
+  }
+  saveStudents(students);
+  closeModal('student-modal');
+  renderStudentTable();
+  renderDashboard();
+  addNotif(`${editingId?'Updated':'Added'} student: ${name}`,'🎒','purple');
+}
+
+function openDeleteStudent(id,name){
+  deletingId=id;
+  document.getElementById('del-name').textContent=name;
+  openModal('delete-modal');
+}
+function confirmDelete(){
+  const students=getStudents().filter(s=>s.id!==deletingId);
+  saveStudents(students);
+  closeModal('delete-modal');
+  renderStudentTable();
+  renderDashboard();
+  toast('Student deleted','🗑');
+}
+
+function viewProfile(id){
+  const s=getStudents().find(s=>s.id===id);
+  if(!s)return;
+  const marks=getMarks()[id]||{};
+  const att=getAttendance()[id]||{};
+  const attPct=att.total?Math.round(att.present/att.total*100):0;
+  const avgMarks=SUBJECTS.length?Math.round(Object.values(marks).reduce((a,b)=>a+b,0)/SUBJECTS.length):0;
+  function grade(m){return m>=90?'O':m>=75?'A':m>=60?'B':m>=50?'C':'F'}
+  document.getElementById('profile-modal-body').innerHTML=`
+    <div class="profile-hero" style="padding:24px;border:none;margin:0;border-bottom:1px solid var(--border)">
+      <div class="profile-av" style="background:${avatarColor(s.id)}">${initials(s.name)}</div>
+      <div class="profile-details">
+        <h2>${s.name}</h2>
+        <p>${s.enrollment} • ${s.roll}</p>
+        <div class="profile-chips">
+          <span class="badge blue">Sem ${s.sem}</span>
+          <span class="badge purple">${s.branch}</span>
+          <span class="badge ${s.status==='Active'?'green':s.status==='Graduated'?'cyan':'red'}">${s.status}</span>
+          <span class="badge ${attPct>=75?'green':'red'}">Att: ${attPct}%</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('profile-modal');openEditStudent(${s.id})">✏️ Edit</button>
+      </div>
+    </div>
+    <div style="padding:20px">
+      <div class="profile-grid mb16">
+        <div class="info-field"><div class="info-label">Email</div><div class="info-value">${s.email}</div></div>
+        <div class="info-field"><div class="info-label">Phone</div><div class="info-value">${s.phone||'—'}</div></div>
+        <div class="info-field"><div class="info-label">Date of Birth</div><div class="info-value">${s.dob||'—'}</div></div>
+        <div class="info-field"><div class="info-label">Gender</div><div class="info-value">${s.gender||'—'}</div></div>
+        <div class="info-field" style="grid-column:1/-1"><div class="info-label">Address</div><div class="info-value">${s.address||'—'}</div></div>
+      </div>
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="card" style="padding:16px">
+          <div class="card-title mb8">Attendance</div>
+          <div style="font-size:32px;font-weight:700;font-family:var(--font-head);color:${attPct>=75?'var(--green)':'var(--red)'}">${attPct}%</div>
+          <div class="progress mt8"><div class="progress-fill" style="width:${attPct}%;background:${attPct>=75?'var(--green)':'var(--red)'}"></div></div>
+          <div class="text-sm text-muted mt8">${att.present||0} / ${att.total||0} days present</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div class="card-title mb8">Academic Performance</div>
+          <div style="font-size:32px;font-weight:700;font-family:var(--font-head);color:var(--accent)">${avgMarks}</div>
+          <div class="progress mt8"><div class="progress-fill" style="width:${avgMarks}%"></div></div>
+          <div class="text-sm text-muted mt8">Average across ${SUBJECTS.length} subjects</div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="card-title mb12">Subject Marks</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${SUBJECTS.map(sub=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface2);border-radius:var(--radius)">
+              <span style="font-size:13px;color:var(--text2)">${sub}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-weight:500;color:var(--text)">${marks[sub]||'—'}</span>
+                <span class="grade-pill grade-${grade(marks[sub]||0)}">${grade(marks[sub]||0)}</span>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  openModal('profile-modal');
+}
+
+// ===================== ATTENDANCE =====================
+function renderAttendance(){
+  const students=getStudents();
+  const branch=document.getElementById('att-branch')?.value;
+  const sem=document.getElementById('att-sem')?.value;
+  let filtered=students;
+  if(branch)filtered=filtered.filter(s=>s.branch===branch);
+  if(sem)filtered=filtered.filter(s=>s.sem==sem);
+  const att=getAttendance();
+  const today=new Date();
+  document.getElementById('att-today-label').textContent=today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+
+  // Mark today
+  document.getElementById('att-mark-list').innerHTML=!filtered.length?
+    '<div class="empty-state"><div class="ico">👥</div><p>No students in this filter</p></div>':
+    `<div style="max-height:300px;overflow-y:auto">
+    ${filtered.slice(0,12).map(s=>{
+      const d=today.getDate();
+      const present=att[s.id]&&att[s.id][d]==='P';
+      return`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div class="av" style="width:30px;height:30px;font-size:11px;border-radius:7px;background:${avatarColor(s.id)}">${initials(s.name)}</div>
+        <div style="flex:1;font-size:13px;color:var(--text)">${s.name}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm ${present?'btn-success':'btn-ghost'}" onclick="markAtt(${s.id},${d},'P')">P</button>
+          <button class="btn btn-sm ${!present&&att[s.id]&&att[s.id][d]==='A'?'btn-danger':'btn-ghost'}" onclick="markAtt(${s.id},${d},'A')">A</button>
+        </div>
+      </div>`;}).join('')}
+    </div>`;
+
+  // Calendar for first student
+  const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  const cells=Array.from({length:daysInMonth},(_,i)=>{
+    const day=i+1;
+    const isToday=day===today.getDate();
+    const isFuture=day>today.getDate();
+    const sample=filtered[0];
+    const status=sample&&att[sample.id]?att[sample.id][day]:null;
+    let cls='att-cell';
+    if(isFuture)cls+=' future';
+    else if(status==='P')cls+=' present';
+    else if(status==='A')cls+=' absent';
+    else cls+=' holiday';
+    return`<div class="${cls}" title="Day ${day}${isToday?' (Today)':''}">${day}</div>`;
+  }).join('');
+  document.getElementById('att-calendar').innerHTML=`<div class="att-grid">${cells}</div>${filtered[0]?`<div class="text-sm text-muted mt8">Calendar for: ${filtered[0].name}</div>`:''}`;
+
+  // Summary table
+  const rows=filtered.slice(0,8).map(s=>{
+    const a=att[s.id]||{total:20,present:15};
+    const pct=a.total?Math.round(a.present/a.total*100):0;
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:10px;border-radius:7px;background:${avatarColor(s.id)}">${initials(s.name)}</div><span class="bold">${s.name}</span></div></td>
+      <td>${a.present||0}</td><td>${a.total||0}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1"><div class="progress" style="height:5px"><div class="progress-fill" style="width:${pct}%;background:${pct>=75?'var(--green)':'var(--red)'}"></div></div></div><span style="font-size:12px;color:${pct>=75?'var(--green)':'var(--red)'};font-weight:500">${pct}%</span></div></td>
+      <td><span class="badge ${pct>=75?'green':'red'}">${pct>=75?'Good':'Low'}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('att-summary-table').innerHTML=`<table>
+    <thead><tr><th>Student</th><th>Present</th><th>Total</th><th>Percentage</th><th>Status</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text3)">No data</td></tr>'}</tbody>
+  </table>`;
+}
+
+function markAtt(id,day,status){
+  const att=getAttendance();
+  if(!att[id])att[id]={total:0,present:0};
+  const prev=att[id][day];
+  att[id][day]=status;
+  if(!prev){att[id].total++;if(status==='P')att[id].present++;}
+  else if(prev!==status){if(status==='P')att[id].present++;else att[id].present=Math.max(0,att[id].present-1);}
+  saveAttendance(att);
+  renderAttendance();
+}
+
+// ===================== MARKS =====================
+function renderMarks(){
+  const students=getStudents();
+  const branch=document.getElementById('marks-branch')?.value;
+  const sem=document.getElementById('marks-sem')?.value;
+  let filtered=students;
+  if(branch)filtered=filtered.filter(s=>s.branch===branch);
+  if(sem)filtered=filtered.filter(s=>s.sem==sem);
+  const marks=getMarks();
+  function grade(m){return m>=90?'O':m>=75?'A':m>=60?'B':m>=50?'C':'F'}
+
+  if(!filtered.length){document.getElementById('marks-table-wrap').innerHTML=`<div class="empty-state"><div class="ico">📝</div><p>No students found</p></div>`;return}
+
+  const rows=filtered.slice(0,10).map(s=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:10px;border-radius:7px;background:${avatarColor(s.id)}">${initials(s.name)}</div><span class="bold">${s.name}</span></div></td>
+      ${SUBJECTS.map(sub=>{
+        const m=marks[s.id]?marks[s.id][sub]:0;
+        return`<td><input class="marks-input" type="number" min="0" max="100" value="${m}" onchange="updateMark(${s.id},'${sub}',this.value)"/></td>`;
+      }).join('')}
+      <td>${marks[s.id]?Math.round(Object.values(marks[s.id]).reduce((a,b)=>a+b,0)/SUBJECTS.length):'—'}</td>
+      <td><span class="grade-pill grade-${grade(marks[s.id]?Math.round(Object.values(marks[s.id]).reduce((a,b)=>a+b,0)/SUBJECTS.length):0)}">${grade(marks[s.id]?Math.round(Object.values(marks[s.id]).reduce((a,b)=>a+b,0)/SUBJECTS.length):0)}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('marks-table-wrap').innerHTML=`
+    <div class="table-wrap">
+      <table class="marks-table">
+        <thead><tr><th>Student</th>${SUBJECTS.map(s=>`<th>${s.length>8?s.slice(0,7)+'…':s}</th>`).join('')}<th>Avg</th><th>Grade</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function updateMark(sid,sub,val){
+  const marks=getMarks();
+  if(!marks[sid])marks[sid]={};
+  marks[sid][sub]=Math.min(100,Math.max(0,parseInt(val)||0));
+  saveMarks(marks);
+  setTimeout(()=>renderMarks(),300);
+}
+
+// ===================== NOTICES =====================
+let noticeNextId=100;
+function renderNotices(){
+  const notices=getNotices();
+  document.getElementById('notices-list').innerHTML=notices.length?
+    notices.map(n=>`
+      <div class="notice-card ${n.type}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:500;color:var(--text);font-size:14px">${n.title}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6">${n.body}</div>
+            <div class="notice-meta">
+              <span class="badge ${n.type==='urgent'?'red':n.type==='info'?'blue':'gray'}">${n.type||'General'}</span>
+              <span>📅 ${n.date}</span>
+              <span>👤 ${n.author}</span>
+              <span>🎯 ${n.audience}</span>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteNotice(${n.id})">✕</button>
+        </div>
+      </div>`).join('')
+    :`<div class="empty-state"><div class="ico">📢</div><p>No notices yet. Post one above!</p></div>`;
+  document.getElementById('notice-badge').textContent=notices.length;
+}
+
+function openAddNotice(){openModal('notice-modal')}
+function postNotice(){
+  const title=document.getElementById('n-title').value.trim();
+  const body=document.getElementById('n-body').value.trim();
+  if(!title||!body){toast('Title and message required','❌');return}
+  const notices=getNotices();
+  notices.unshift({id:++noticeNextId,title,body,type:document.getElementById('n-type').value,audience:document.getElementById('n-audience').value,date:new Date().toISOString().slice(0,10),author:currentUser.name});
+  saveNotices(notices);
+  closeModal('notice-modal');
+  document.getElementById('n-title').value='';
+  document.getElementById('n-body').value='';
+  renderNotices();
+  addNotif('Notice posted: '+title,'📢','blue');
+  toast('Notice posted!','📢');
+}
+function deleteNotice(id){
+  saveNotices(getNotices().filter(n=>n.id!==id));
+  renderNotices();
+  toast('Notice deleted','🗑');
+}
+
+// ===================== REPORTS CHART =====================
+function renderPerfChart(){
+  const students=getStudents();
+  const marks=getMarks();
+  const branchAvg=BRANCHES.map(b=>{
+    const sts=students.filter(s=>s.branch===b);
+    if(!sts.length)return 0;
+    return Math.round(sts.reduce((sum,s)=>{
+      const m=marks[s.id];
+      if(!m)return sum+70;
+      return sum+Math.round(Object.values(m).reduce((a,b)=>a+b,0)/Object.keys(m).length);
+    },0)/sts.length);
+  });
+  const maxA=Math.max(...branchAvg,1);
+  document.getElementById('perf-chart').innerHTML=BRANCHES.map((b,i)=>`
+    <div class="chart-bar-row" style="margin-bottom:14px">
+      <div class="chart-label" style="width:160px">${b}</div>
+      <div class="chart-track"><div class="chart-fill" style="width:${branchAvg[i]/maxA*100}%;background:${COLORS[i]}"></div></div>
+      <div class="chart-count" style="width:50px">${branchAvg[i]}%</div>
+    </div>`).join('');
+}
+
+// ===================== NOTIFICATIONS =====================
+let notifications=[
+  {id:1,title:'New student registered',msg:'Ananya Gupta enrolled in IT Branch',ico:'🎒',color:'purple',time:'2 min ago',read:false},
+  {id:2,title:'Attendance alert',msg:'5 students below 75% threshold',ico:'⚠️',color:'amber',time:'1 hr ago',read:false},
+  {id:3,title:'Exam scheduled',msg:'End semester exams from Dec 15',ico:'📅',color:'blue',time:'3 hr ago',read:true},
+];
+function renderNotifPanel(){
+  document.getElementById('notif-list').innerHTML=notifications.map(n=>`
+    <div class="notif-item ${n.read?'':'notif-unread'}" onclick="readNotif(${n.id})">
+      <div class="notif-ico ${n.color}-bg" style="background:var(--${n.color}-bg)">${n.ico}</div>
+      <div><div class="notif-text"><strong>${n.title}</strong> — ${n.msg}</div><div class="notif-time">${n.time}</div></div>
+    </div>`).join('');
+  const unread=notifications.filter(n=>!n.read).length;
+  document.getElementById('notif-dot').style.display=unread?'block':'none';
+}
+function addNotif(msg,ico,color){
+  notifications.unshift({id:Date.now(),title:'Activity',msg,ico,color,time:'just now',read:false});
+  renderNotifPanel();
+}
+function readNotif(id){notifications=notifications.map(n=>n.id===id?{...n,read:true}:n);renderNotifPanel()}
+function clearNotifs(){notifications=notifications.map(n=>({...n,read:true}));renderNotifPanel();document.getElementById('notif-panel').classList.remove('open')}
+function toggleNotifPanel(){document.getElementById('notif-panel').classList.toggle('open')}
+
+// ===================== EXPORT =====================
+function exportExcel(){
+  const students=getStudents();
+  const ws_data=[['Name','Enrollment','Roll','Branch','Semester','Email','Phone','DOB','Status'],...students.map(s=>[s.name,s.enrollment,s.roll,s.branch,s.sem,s.email,s.phone||'',s.dob||'',s.status])];
+  const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Students');
+  XLSX.writeFile(wb,'AcademIQ_Students.xlsx');
+  toast('Excel exported!','📊');
+}
+
+function exportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('AcademIQ — Student Directory',14,18);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(100);
+  doc.text(`Generated: ${new Date().toLocaleDateString()}`,14,26);doc.text(`Total Students: ${getStudents().length}`,14,31);
+  doc.setTextColor(0);
+  const students=getStudents();
+  const cols=['Name','Enrollment','Branch','Sem','Email','Status'];
+  const rows=students.map(s=>[s.name,s.enrollment,s.branch,s.sem,s.email,s.status]);
+  let y=42;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');
+  cols.forEach((c,i)=>doc.text(c,[14,54,90,130,148,190][i],y));
+  y+=4;doc.line(14,y,196,y);y+=6;
+  doc.setFont('helvetica','normal');
+  rows.slice(0,30).forEach(r=>{
+    if(y>275){doc.addPage();y=20}
+    r.forEach((v,i)=>doc.text(String(v||'').slice(0,20),[14,54,90,130,148,190][i],y));
+    y+=7;
+  });
+  doc.save('AcademIQ_Students.pdf');
+  toast('PDF exported!','📄');
+}
+
+function exportAttPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('AcademIQ — Attendance Report',14,18);
+  const students=getStudents();const att=getAttendance();
+  let y=36;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');
+  ['Name','Branch','Present','Total','Pct'].forEach((c,i)=>doc.text(c,[14,60,110,135,160][i],y));
+  y+=4;doc.line(14,y,196,y);y+=6;
+  doc.setFont('helvetica','normal');
+  students.slice(0,30).forEach(s=>{
+    const a=att[s.id]||{present:0,total:0};
+    const pct=a.total?Math.round(a.present/a.total*100):0;
+    if(y>275){doc.addPage();y=20}
+    [s.name.slice(0,18),s.branch.slice(0,14),String(a.present),String(a.total),pct+'%'].forEach((v,i)=>doc.text(v,[14,60,110,135,160][i],y));
+    y+=7;
+  });
+  doc.save('AcademIQ_Attendance.pdf');
+  toast('Attendance PDF exported!','📅');
+}
+
+function exportMarksExcel(){
+  const students=getStudents();const marks=getMarks();
+  const header=['Name','Enrollment','Branch',...SUBJECTS,'Average','Grade'];
+  function grade(m){return m>=90?'O':m>=75?'A':m>=60?'B':m>=50?'C':'F'}
+  const rows=students.map(s=>{
+    const m=marks[s.id]||{};
+    const avg=SUBJECTS.length?Math.round(SUBJECTS.reduce((a,sub)=>a+(m[sub]||0),0)/SUBJECTS.length):0;
+    return[s.name,s.enrollment,s.branch,...SUBJECTS.map(sub=>m[sub]||''),avg,grade(avg)];
+  });
+  const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Marks');
+  XLSX.writeFile(wb,'AcademIQ_Marks.xlsx');
+  toast('Marks Excel exported!','🏆');
+}
+
+// ===================== GLOBAL SEARCH =====================
+function globalSearch(q){
+  if(!q){return}
+  if(q.length<2)return;
+  const students=getStudents().filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.enrollment.toLowerCase().includes(q.toLowerCase()));
+  if(students.length){
+    nav('students',document.querySelector('.nav-item:nth-child(2)'));
+    document.getElementById('filter-search').value=q;
+    renderStudentTable();
+  }
+}
+
+// ===================== MODAL =====================
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})});
+
+// ===================== THEME =====================
+function toggleTheme(){
+  const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelector('.icon-btn[onclick="toggleTheme()"]').textContent=t==='dark'?'🌙':'☀️';
+  toast('Switched to '+t+' mode',t==='dark'?'🌙':'☀️');
+}
+function setAccent(a,a2){
+  document.documentElement.style.setProperty('--accent',a);
+  document.documentElement.style.setProperty('--accent2',a2);
+  document.documentElement.style.setProperty('--accent-glow',a+'40');
+  toast('Accent color updated','🎨');
+}
+
+// ===================== TOAST =====================
+function toast(msg,icon='ℹ️'){
+  const el=document.createElement('div');
+  el.className='toast-item';
+  el.innerHTML=`<span class="toast-icon">${icon}</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),4000);
+}
+
+// ===================== RESPONSIVE =====================
+if(window.innerWidth<768){
+  document.getElementById('menu-btn').style.display='flex';
+}
+window.addEventListener('resize',()=>{
+  document.getElementById('menu-btn').style.display=window.innerWidth<768?'flex':'none';
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#notif-panel')&&!e.target.closest('.icon-btn'))
+    document.getElementById('notif-panel').classList.remove('open');
+});
+
+// ===================== INIT =====================
+initData();
+</script>
+</body>
+</html>
